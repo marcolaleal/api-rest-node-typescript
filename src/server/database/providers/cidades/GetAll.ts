@@ -10,7 +10,7 @@ export const getAll = async (page: number, limit: number, filter: String, id = 0
             .select('*')
             .where('id', Number(id))
             .orWhere('nome', 'like',`%${filter}%`)
-            .offset((page - 1) - limit)
+            .offset((page - 1) * limit)
             .limit(limit);
 
         if (id > 0 && result.every(item => item.id !== id)) {

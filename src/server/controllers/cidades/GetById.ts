@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import * as yup from 'yup';
+import { CidadesProvider } from '../../database/providers/cidades';
 
 import { validation } from '../../shared/middlewares';
 
@@ -17,15 +18,23 @@ export const getByIdValidation = validation((getSchema) => ({
 
 export const getById = async (req: Request<IParamProps>, res: Response) => {
 
-    if (Number(req.params.id) === 99999) return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
-        errors: {
-            default: 'Registro não encontrado'
-        }
-    });
+    if (!req.params.id) { 
+        return res.status(StatusCodes.BAD_REQUEST).json({
+            errors: {
+                default: 'O parametro "id" precisa ser infromado'
+            }
+        });
+    }
 
-    
-    return res.status(StatusCodes.OK).json({
-        id: req.params.id,
-        nome: 'Formiga',
-    });
+    const result = await CidadesProvider.getById(req.params.id);
+
+    if (result instanceof Error) {
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({
+            errors: {
+                default: result.message
+            }
+        });
+    }
+
+    return res.status(StatusCodes.OK).json(result);
 };
