@@ -5,19 +5,47 @@ import { testServer } from '../jest.setup';
 
 
 describe('Pessoas - Create',() => {
+    
     let cidadeId: number | undefined = undefined;
+    let accessToken = '';
     beforeAll(async () => {
+
+        const email = 'create-pessoas@gmail.com'; 
+        await testServer.post('/cadastrar').send({
+            nome: 'UserTest',
+            senha: '123456789',
+            email: email,
+        });
+        const signInRes = await testServer.post('/entrar').send({email: email ,senha: '123456789'});
+
+        accessToken = signInRes.body.accessToken;
+
         const resCidade = await testServer
             .post('/cidades')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({nome: 'Teste'});
         
         cidadeId = resCidade.body;
     });
 
+    it('Tenta criar registro sem autenticação', async () => {
+
+        const res1 = await testServer
+            .post('/pessoas')
+            .send({
+                cidadeId,
+                email: 'createsemauth@gmail.com',
+                nomeCompleto: 'Mateus Leal'
+            });
+
+        expect(res1.statusCode).toEqual(StatusCodes.UNAUTHORIZED);
+        expect(res1.body).toHaveProperty('errors.default');
+    });
     it('Cria Registro', async () => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 cidadeId,
                 email: 'mateuscreate@gmail.com',
@@ -31,6 +59,7 @@ describe('Pessoas - Create',() => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 cidadeId,
                 email: 'mateuscreate2@gmail.com',
@@ -44,6 +73,7 @@ describe('Pessoas - Create',() => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 cidadeId,
                 email: 'mateusduplicado@gmail.com',
@@ -55,6 +85,7 @@ describe('Pessoas - Create',() => {
 
         const res2 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 cidadeId,
                 email: 'mateusduplicado@gmail.com',
@@ -68,6 +99,7 @@ describe('Pessoas - Create',() => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 cidadeId,
                 email: 'mate@gmail.com',
@@ -81,6 +113,7 @@ describe('Pessoas - Create',() => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 cidadeId,
                 email: 'mate@gmail.com',
@@ -93,6 +126,7 @@ describe('Pessoas - Create',() => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 cidadeId,
                 nomeCompleto: 'Mateus Leal'
@@ -105,6 +139,7 @@ describe('Pessoas - Create',() => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 cidadeId,
                 email: 'mateus',
@@ -118,6 +153,7 @@ describe('Pessoas - Create',() => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 email: 'mateusleal01@gmail.com',
                 nomeCompleto: 'Mateus Leal'
@@ -130,6 +166,7 @@ describe('Pessoas - Create',() => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 cidadeId: 'teste',
                 email: 'mateusleal01@gmail.com',
@@ -143,6 +180,7 @@ describe('Pessoas - Create',() => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({
                 cidadeId: 99999,
                 email: 'mateusleal01@gmail.com',
@@ -156,6 +194,7 @@ describe('Pessoas - Create',() => {
 
         const res1 = await testServer
             .post('/pessoas')
+            .set({Authorization: `Bearer ${accessToken}` })
             .send({});
 
         expect(res1.statusCode).toEqual(StatusCodes.BAD_REQUEST);
